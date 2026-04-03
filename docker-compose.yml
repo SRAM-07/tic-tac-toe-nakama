@@ -1,0 +1,46 @@
+version: '2.4'
+
+services:
+  postgres:
+    image: postgres:12.2-alpine
+    environment:
+      - POSTGRES_DB=nakama
+      - POSTGRES_USER=nakama
+      - POSTGRES_PASSWORD=local-db-password
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "nakama", "-d", "nakama"]
+      interval: 3s
+      timeout: 3s
+      retries: 5
+    ports:
+      - "5440:5432"  # Moved to 5440 to avoid 'address already in use'
+    networks:
+      - nakama-net
+
+  nakama:
+    image: heroiclabs/nakama:3.22.0
+    depends_on:
+      - postgres
+    ports:
+      - "7349:7349"
+      - "7350:7350"
+      - "7351:7351"
+    volumes:
+      - ./data:/nakama/data
+    restart: always
+    entrypoint:
+      - /bin/sh
+      - -ecx
+      - |
+        /nakama/nakama migrate up --database.address "nakama:local-db-password@postgres:5432/nakama"
+        exec /nakama/nakama \
+          --database.address "nakama:local-db-password@postgres:5432/nakama" \
+          --logger.level debug \
+          --socket.server_key "defaultkey" \
+          --runtime.path "/nakama/data/modules"
+    networks:
+      - nakama-net
+
+networks:
+  nakama-net:
+    driver: bridge
