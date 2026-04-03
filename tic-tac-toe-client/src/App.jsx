@@ -2,8 +2,8 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { Client } from "@heroiclabs/nakama-js";
 import "./App.css";
 
-const NAKAMA_HOST = "localhost";
-const NAKAMA_PORT = "7350";
+const NAKAMA_HOST = "tic-tac-toe-nakama-ciu0.onrender.com";
+const NAKAMA_PORT = "443";
 const NAKAMA_KEY = "defaultkey";
 
 const SCREEN = {
@@ -84,11 +84,11 @@ export default function App() {
   useEffect(() => {
     const setup = async () => {
       try {
-        const client = new Client(NAKAMA_KEY, NAKAMA_HOST, NAKAMA_PORT, false);
+        const client = new Client(NAKAMA_KEY, NAKAMA_HOST, NAKAMA_PORT, true);
         const session = await client.authenticateDevice(getDeviceId(), true);
 
         // ✅ KEY FIX: store socket ref BEFORE awaiting connect
-        const socket = client.createSocket(false, true);
+        const socket = client.createSocket(true, true);
         socketRef.current = socket;
 
         socket.onmatchdata = async (data) => {
